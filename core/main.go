@@ -19,7 +19,11 @@ import (
 	_ "picup/core/infrastructure/processors/ffmpeg"
 )
 
+var version = "dev"
+
 func main() {
+	log.Printf("Picup version: %s", version)
+
 	var configPath string
 	flag.StringVar(&configPath, "config", "config.ini", "path to config file")
 	flag.StringVar(&configPath, "c", "config.ini", "path to config file (shorthand)")

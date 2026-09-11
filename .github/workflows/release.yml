@@ -1,0 +1,188 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch: # Enables the manual trigger button
+    inputs:
+      release_version:
+        description: 'Version to embed in the binaries'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  test:
+    name: Test Go
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Run tests
+        run: go test ./...
+
+  webui:
+    name: Build Web UI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: webui/package-lock.json
+
+      - name: Install dependencies
+        working-directory: webui
+        run: npm ci
+
+      - name: Build Web UI
+        working-directory: webui
+        run: npm run build
+
+      - name: Upload Web UI
+        uses: actions/upload-artifact@v4
+        with:
+          name: webui
+          path: build/webui
+          if-no-files-found: error
+
+  alpine:
+    name: Build Alpine Linux
+    needs: [test, webui]
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ inputs.release_version || github.ref_name }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Download Web UI
+        uses: actions/download-artifact@v4
+        with:
+          name: webui
+          path: build/webui
+
+      - name: Build Alpine binary
+        run: |
+          docker run --rm \
+            --env VERSION="$VERSION" \
+            --volume "$PWD:/workspace" \
+            --workdir /workspace \
+            golang:1.26-alpine \
+            sh -c 'apk add --no-cache build-base && CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags="-s -w -X main.version=$VERSION" -o picup-linux-amd64 ./core'
+
+      - name: Package Alpine release
+        run: |
+          mkdir -p release/picup-linux-amd64/build
+          cp picup-linux-amd64 release/picup-linux-amd64/
+          cp core/example.config.ini release/picup-linux-amd64/config.ini
+          cp -R build/webui release/picup-linux-amd64/build/webui
+          tar -C release -czf picup-linux-amd64.tar.gz picup-linux-amd64
+
+      - name: Upload Alpine release
+        uses: actions/upload-artifact@v4
+        with:
+          name: picup-linux-amd64
+          path: picup-linux-amd64.tar.gz
+          if-no-files-found: error
+
+  windows:
+    name: Build Windows
+    needs: [test, webui]
+    runs-on: windows-latest
+    env:
+      VERSION: ${{ inputs.release_version || github.ref_name }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Install MinGW toolchain
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: mingw-w64-x86_64-gcc
+
+      - name: Add MinGW to PATH
+        shell: pwsh
+        run: echo "C:\\msys64\\mingw64\\bin" >> $env:GITHUB_PATH
+
+      - name: Download Web UI
+        uses: actions/download-artifact@v4
+        with:
+          name: webui
+          path: build/webui
+
+      - name: Build Windows binary
+        shell: pwsh
+        env:
+          CGO_ENABLED: 1
+          GOOS: windows
+          GOARCH: amd64
+          CC: gcc
+        run: go build -trimpath -ldflags="-s -w -X main.version=$env:VERSION" -o picup-windows-amd64.exe ./core
+
+      - name: Package Windows release
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path release/picup-windows-amd64/build | Out-Null
+          Copy-Item picup-windows-amd64.exe release/picup-windows-amd64/
+          Copy-Item core/example.config.ini release/picup-windows-amd64/config.ini
+          Copy-Item -Recurse build/webui release/picup-windows-amd64/build/webui
+          Compress-Archive -Path release/picup-windows-amd64 -DestinationPath picup-windows-amd64.zip
+
+      - name: Upload Windows release
+        uses: actions/upload-artifact@v4
+        with:
+          name: picup-windows-amd64
+          path: picup-windows-amd64.zip
+          if-no-files-found: error
+
+  release:
+    name: Publish GitHub Release
+    needs: [alpine, windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download Alpine release
+        uses: actions/download-artifact@v4
+        with:
+          name: picup-linux-amd64
+          path: dist
+
+      - name: Download Windows release
+        uses: actions/download-artifact@v4
+        with:
+          name: picup-windows-amd64
+          path: dist
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: dist/*
