@@ -1,0 +1,37 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+picup
+
+# Test binary built using `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LightTable
+*.out
+
+# Dependency directories (pkg/ is created by go build)
+pkg/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# IDEs and Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# exclude app-specific files
+config.ini
+*.db
+# binary & build files
+picup-server
+build/
+
