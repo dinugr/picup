@@ -70,7 +70,7 @@ func main() {
 	})
 
 	// 6. Init Server
-	addr := utils.NewBaseURL(config.Server.Host, config.Server.Port, config.Server.DataDir, config.Server.BaseURL)
+	addr := utils.NewBaseURL(config.Server.Host, config.Server.Port, config.Server.DataDir)
 	server := &http.Server{
 		Addr:    addr,
 		Handler: handler,

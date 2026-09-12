@@ -115,7 +115,6 @@ Start from [core/example.config.ini](core/example.config.ini), then review the s
 | `exiftool_path` | `exiftool` | ExifTool executable name or absolute path. |
 | `host` | `localhost` | HTTP bind host. The value `*` enables listening on all interfaces. |
 | `port` | `9906` | HTTP listen port. |
-| `base_url` | empty | Optional externally visible base URL. |
 | `webui_dir` | `./webui` | Directory containing the built static web UI. Source builds use `./build/webui`; release archives use `./webui`. |
 | `webui_enabled` | `false` | Serves the static UI from `webui_dir` when `true`; otherwise serves the embedded fallback page. |
 | `assets_base_path` | `/assets/images` | URL prefix used to serve image variants. A trailing slash must be omitted. |

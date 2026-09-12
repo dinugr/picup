@@ -15,6 +15,11 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 // If API_BASE_URL is set to an absolute URL, cookie SameSite/CORS issues may occur.
 const apiPath = (path: string) => (API_BASE_URL ? `${API_BASE_URL}${path}` : path);
 
+function resolveImageUrl(value: string): string {
+  if (!value) return '';
+  return new URL(value, API_BASE_URL || window.location.origin).toString();
+}
+
 export class UnauthorizedError extends Error {
   constructor() {
     super('Your session has expired. Please sign in again.');
@@ -45,7 +50,7 @@ function normalizeImage(image: unknown): Image {
   return {
     ...(record as unknown as Image),
     name: (record.name as string) ?? '',
-    image_url: (record.image_url as string) ?? '',
+    image_url: resolveImageUrl((record.image_url as string) ?? ''),
     stored_name: (record.stored_name as string) ?? '',
   };
 }
