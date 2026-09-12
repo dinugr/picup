@@ -17,10 +17,6 @@ export interface ConfigContextValue {
   isFileTypeAllowed: (filename: string) => boolean;
 }
 
-export interface HeaderProps {
-  totalImages?: number;
-}
-
 export interface SearchBarProps {
   search: string;
   setSearch: (value: string) => void;

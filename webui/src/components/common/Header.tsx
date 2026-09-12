@@ -1,9 +1,8 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { LogOut, Settings, Shield } from 'lucide-react';
 import { useAuth } from 'picup/context/AuthContext';
-import type { HeaderProps } from 'picup/types/ui';
 
-export default function Header({ totalImages = 0 }: HeaderProps) {
+export default function Header() {
   const location = useLocation();
   const navigate = useNavigate();
   const { logoutCurrent } = useAuth();
@@ -67,13 +66,6 @@ export default function Header({ totalImages = 0 }: HeaderProps) {
           Log out
         </button>
       </nav>
-
-      <div className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3.5 py-1.5 text-sm text-slate-400 sm:flex">
-        <span>Total Images:</span>
-        <strong className="font-bold text-slate-100">
-          {totalImages}
-        </strong>
-      </div>
     </header>
   );
 }

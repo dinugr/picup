@@ -35,7 +35,6 @@ export default function GalleryPage() {
   const [page, setPage] = useState(1);
   const [limit] = useState(12);
   const [totalPages, setTotalPages] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
   const [search, setSearch] = useState('');
 
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
@@ -53,7 +52,6 @@ export default function GalleryPage() {
         setImages(res.data ?? []);
         if (res.pagination) {
           setTotalPages(res.pagination.total_pages || 1);
-          setTotalItems(res.pagination.total_items || 0);
         }
       }
     } catch (err) {
@@ -105,7 +103,7 @@ export default function GalleryPage() {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Header totalImages={totalItems} />
+      <Header />
 
       <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-7 px-6 py-8">
         <section>
