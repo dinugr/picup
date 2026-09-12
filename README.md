@@ -2,7 +2,7 @@
 
 Picup is a self-hosted simple image upload and gallery service written in Go. It stores image metadata in SQLite, keeps files on local storage, extracts EXIF metadata, and generates configured image variants through FFmpeg. The main purpose is to keep original image while generating the configured variants needed for content blog post and other publishing workflows.
 
-Picup (currently) relies on external engine for its image workflow:
+Picup currently relies on external tools for its image workflow:
 
 - ExifTool extracts and preserves image metadata during upload processing.
 - FFmpeg generates the configured image variants, including resized and cropped versions.
