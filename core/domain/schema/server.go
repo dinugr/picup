@@ -1,9 +1,8 @@
 package schema
 
 type Server struct {
-	Host    string
-	Port    uint64
-	BaseURL string
+	Host string
+	Port uint64
 
 	// AssetsBasePath is the URL path prefix under which image variants are served.
 	// Example: "/assets/images" (no trailing slash).

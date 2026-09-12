@@ -21,7 +21,6 @@ func Load(path string) error {
 	s := cfg.Section("server")
 	Server.Host = s.Key("host").MustString("localhost")
 	Server.Port = s.Key("port").MustUint64(9906)
-	Server.BaseURL = s.Key("base_url").String()
 
 	Server.DataDir = s.Key("data_dir").MustString("./data")
 	Server.TempDir = s.Key("temp_dir").MustString("./temp")
