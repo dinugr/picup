@@ -111,7 +111,7 @@ func (c *Workflow) ProcessDisplay(ctx context.Context, dv *schema.Variant) error
 		return fmt.Errorf("failed to inspect display variant metadata: %w", err)
 	}
 
-	im := models.NewImage(constants.IMAGE_TYPE_DISPLAY, dv.Name, c.imMaster.StoredName)
+	im := models.NewImage(constants.IMAGE_TYPE_DISPLAY, dv.Name, c.imMaster.UploadName)
 
 	im.MasterID = &c.imMaster.ID
 	im.MIMEType = c.imMaster.MIMEType
