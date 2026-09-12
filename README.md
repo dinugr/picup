@@ -251,8 +251,6 @@ Run the web UI lint task:
 npm run lint
 ```
 
-The GitHub release workflow runs Go tests, builds the web UI, and packages Linux amd64 and Windows amd64 artifacts when a `v*` tag is pushed. It can also be started manually with a release version.
-
 ## Troubleshooting
 
 - **ExifTool or FFmpeg not found:** install the executable and verify it is on `PATH`, or set `exiftool_path` and the configured FFmpeg path explicitly.
