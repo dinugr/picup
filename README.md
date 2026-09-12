@@ -9,6 +9,11 @@ Picup currently relies on external tools for its image workflow:
 
 Both dependencies are required for the corresponding runtime features.
 
+## Preview
+
+![Picup web UI gallery preview](docs/webui-screenshot.png)
+
+
 ## Features
 
 - Authenticated web UI with JWT-backed session cookies.
