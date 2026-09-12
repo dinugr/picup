@@ -67,17 +67,23 @@ Picup also accepts `-c config.ini` or a positional configuration path, for examp
 
 ## Packaged Releases
 
-Release archives are provided for Linux amd64 and Windows amd64. Extract the archive and run the binary from the extracted directory. The packaged UI is under `build/webui`; the accompanying `config.ini` must use:
+Release archives are provided for Linux amd64 with musl, Linux amd64 with glibc, and Windows amd64. Extract an archive and run the binary from the extracted directory. The packaged UI is under `webui`; the accompanying `config.ini` should use:
 
 ```ini
 webui_enabled = true
-webui_dir = ./build/webui
+webui_dir = ./webui
 ```
 
 The packaged binary uses the same command-line configuration options as a source build:
 
 ```sh
-./picup-linux-amd64 -config config.ini
+./picup-linux-musl-amd64 -config config.ini
+```
+
+For glibc-based Linux distributions, run:
+
+```sh
+./picup-linux-glibc-amd64 -config config.ini
 ```
 
 On Windows, run the equivalent executable from PowerShell:
@@ -105,7 +111,7 @@ Start from [core/example.config.ini](core/example.config.ini), then review the s
 | `host` | `localhost` | HTTP bind host. The value `*` enables listening on all interfaces. |
 | `port` | `9906` | HTTP listen port. |
 | `base_url` | empty | Optional externally visible base URL. |
-| `webui_dir` | `./webui` | Directory containing the built static web UI. The repository and release layout uses `./build/webui`. |
+| `webui_dir` | `./webui` | Directory containing the built static web UI. Source builds use `./build/webui`; release archives use `./webui`. |
 | `webui_enabled` | `false` | Serves the static UI from `webui_dir` when `true`; otherwise serves the embedded fallback page. |
 | `assets_base_path` | `/assets/images` | URL prefix used to serve image variants. A trailing slash must be omitted. |
 | `variants_sequence` | `preview` | Comma-separated variant names controlling list order in the frontend. See the Variants section for details. |

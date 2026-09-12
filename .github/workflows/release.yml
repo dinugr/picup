@@ -64,8 +64,8 @@ jobs:
           path: build/webui
           if-no-files-found: error
 
-  alpine:
-    name: Build Alpine Linux
+  musl:
+    name: Build Linux musl
     needs: [test, webui]
     runs-on: ubuntu-latest
     env:
@@ -78,30 +78,70 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: webui
-          path: build/webui
+          path: webui
 
-      - name: Build Alpine binary
+      - name: Build Linux musl binary
         run: |
           docker run --rm \
             --env VERSION="$VERSION" \
             --volume "$PWD:/workspace" \
             --workdir /workspace \
             golang:1.26-alpine \
-            sh -c 'apk add --no-cache build-base && CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags="-s -w -X main.version=$VERSION" -o picup-linux-amd64 ./core'
+            sh -c 'apk add --no-cache build-base && CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags="-s -w -X main.version=$VERSION" -o picup-linux-musl-amd64 ./core'
 
-      - name: Package Alpine release
+      - name: Package Linux musl release
         run: |
-          mkdir -p release/picup-linux-amd64/build
-          cp picup-linux-amd64 release/picup-linux-amd64/
-          cp core/example.config.ini release/picup-linux-amd64/config.ini
-          cp -R build/webui release/picup-linux-amd64/build/webui
-          tar -C release -czf picup-linux-amd64.tar.gz picup-linux-amd64
+          mkdir -p release/picup-linux-musl-amd64
+          cp picup-linux-musl-amd64 release/picup-linux-musl-amd64/
+          cp core/example.config.ini release/picup-linux-musl-amd64/config.ini
+          cp -R webui release/picup-linux-musl-amd64/webui
+          tar -C release -czf picup-linux-musl-amd64.tar.gz picup-linux-musl-amd64
 
-      - name: Upload Alpine release
+      - name: Upload Linux musl release
         uses: actions/upload-artifact@v4
         with:
-          name: picup-linux-amd64
-          path: picup-linux-amd64.tar.gz
+          name: picup-linux-musl-amd64
+          path: picup-linux-musl-amd64.tar.gz
+          if-no-files-found: error
+
+  glibc:
+    name: Build Linux glibc
+    needs: [test, webui]
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ inputs.release_version || github.ref_name }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Download Web UI
+        uses: actions/download-artifact@v4
+        with:
+          name: webui
+          path: webui
+
+      - name: Build Linux glibc binary
+        run: |
+          docker run --rm \
+            --env VERSION="$VERSION" \
+            --volume "$PWD:/workspace" \
+            --workdir /workspace \
+            archlinux:latest \
+            bash -c 'pacman -Sy --noconfirm --needed base-devel go && CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags="-s -w -X main.version=$VERSION" -o picup-linux-glibc-amd64 ./core'
+
+      - name: Package Linux glibc release
+        run: |
+          mkdir -p release/picup-linux-glibc-amd64
+          cp picup-linux-glibc-amd64 release/picup-linux-glibc-amd64/
+          cp core/example.config.ini release/picup-linux-glibc-amd64/config.ini
+          cp -R webui release/picup-linux-glibc-amd64/webui
+          tar -C release -czf picup-linux-glibc-amd64.tar.gz picup-linux-glibc-amd64
+
+      - name: Upload Linux glibc release
+        uses: actions/upload-artifact@v4
+        with:
+          name: picup-linux-glibc-amd64
+          path: picup-linux-glibc-amd64.tar.gz
           if-no-files-found: error
 
   windows:
@@ -135,7 +175,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: webui
-          path: build/webui
+          path: webui
 
       - name: Build Windows binary
         shell: pwsh
@@ -149,10 +189,10 @@ jobs:
       - name: Package Windows release
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path release/picup-windows-amd64/build | Out-Null
+          New-Item -ItemType Directory -Force -Path release/picup-windows-amd64 | Out-Null
           Copy-Item picup-windows-amd64.exe release/picup-windows-amd64/
           Copy-Item core/example.config.ini release/picup-windows-amd64/config.ini
-          Copy-Item -Recurse build/webui release/picup-windows-amd64/build/webui
+          Copy-Item -Recurse webui release/picup-windows-amd64/webui
           Compress-Archive -Path release/picup-windows-amd64 -DestinationPath picup-windows-amd64.zip
 
       - name: Upload Windows release
@@ -164,15 +204,21 @@ jobs:
 
   release:
     name: Publish GitHub Release
-    needs: [alpine, windows]
+    needs: [musl, glibc, windows]
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
-      - name: Download Alpine release
+      - name: Download Linux musl release
         uses: actions/download-artifact@v4
         with:
-          name: picup-linux-amd64
+          name: picup-linux-musl-amd64
+          path: dist
+
+      - name: Download Linux glibc release
+        uses: actions/download-artifact@v4
+        with:
+          name: picup-linux-glibc-amd64
           path: dist
 
       - name: Download Windows release
