@@ -17,14 +17,14 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [username, setUsername] = useState('admin');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fromPath = (location.state as { from?: string } | null)?.from ?? '/';
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
@@ -66,7 +66,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-linear-to-b from-slate-950 via-slate-900 to-slate-800">
       <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-10">
         <div className="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-xl backdrop-blur">
-          <h1 className="mb-2 text-2xl font-semibold text-white">Admin Login</h1>
+          <h1 className="mb-2 text-2xl font-semibold text-white">Picup Login</h1>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <label className="block">
